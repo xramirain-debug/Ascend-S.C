@@ -63,9 +63,10 @@ export default function IntakeWizard() {
     setStatus("editing");
   }, []);
 
-  /* persist progress */
+  /* persist progress (also while showing a submit error — the user can
+     still edit, and those edits must survive a reload) */
   useEffect(() => {
-    if (status !== "editing") return;
+    if (status === "loading" || status === "sending" || status === "done") return;
     try {
       window.localStorage.setItem(
         STORAGE_KEY,
@@ -82,7 +83,15 @@ export default function IntakeWizard() {
   const isReview = pageIndex === stepsNow.length;
   const currentStep: StepDef | null = isReview ? null : stepsNow[pageIndex];
 
+  /* after a failed submit, any interaction returns the wizard to editing
+     and clears the stale error banner */
+  function resumeEditing() {
+    setStatus((s) => (s === "error" ? "editing" : s));
+    setServerError("");
+  }
+
   function setAnswer(id: string, value: string | string[]) {
+    resumeEditing();
     setAnswers((a) => ({ ...a, [id]: value }));
     setErrors((e) => {
       if (!e[id]) return e;
@@ -93,10 +102,17 @@ export default function IntakeWizard() {
   }
 
   function scrollTop() {
-    topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    topRef.current?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
   }
 
   function goNext() {
+    resumeEditing();
     if (currentStep) {
       const errs = validateStep(currentStep, answers);
       if (Object.keys(errs).length > 0) {
@@ -104,7 +120,10 @@ export default function IntakeWizard() {
         const first = document.getElementById(
           `intake-${Object.keys(errs)[0]}`,
         );
-        first?.focus();
+        if (first) {
+          first.focus();
+          first.scrollIntoView({ behavior: "auto", block: "center" });
+        }
         return;
       }
     }
@@ -114,12 +133,14 @@ export default function IntakeWizard() {
   }
 
   function goBack() {
+    resumeEditing();
     setErrors({});
     setStepIndex(Math.max(0, pageIndex - 1));
     scrollTop();
   }
 
   function jumpTo(i: number) {
+    resumeEditing();
     setErrors({});
     setStepIndex(i);
     scrollTop();
@@ -459,7 +480,12 @@ function Field({
     const toggle = (v: string, on: boolean) =>
       onChange(field.id, on ? [...selected, v] : selected.filter((x) => x !== v));
     return (
-      <fieldset className={cls} aria-describedby={describedBy}>
+      <fieldset
+        className={cls}
+        id={inputId}
+        tabIndex={-1}
+        aria-describedby={describedBy}
+      >
         <legend className="field__legend">
           {field.label}
           {field.required ? " *" : ""}
@@ -503,7 +529,12 @@ function Field({
   if (field.type === "radio") {
     const current = typeof value === "string" ? value : "";
     return (
-      <fieldset className={cls} aria-describedby={describedBy}>
+      <fieldset
+        className={cls}
+        id={inputId}
+        tabIndex={-1}
+        aria-describedby={describedBy}
+      >
         <legend className="field__legend">
           {field.label}
           {field.required ? " *" : ""}

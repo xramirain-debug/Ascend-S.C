@@ -72,8 +72,12 @@ export default function ContactForm() {
             value={fields.name}
             onChange={(e) => set("name", e.target.value)}
             required
+            aria-invalid={errors.name ? true : undefined}
+            aria-describedby={errors.name ? "contact-name-error" : undefined}
           />
-          {errors.name ? <span className="field-error" role="alert">{errors.name}</span> : null}
+          {errors.name ? (
+            <span className="field-error" role="alert" id="contact-name-error">{errors.name}</span>
+          ) : null}
         </div>
         <div className={`field${errors.facility ? " field--invalid" : ""}`}>
           <label htmlFor="contact-facility">Facility / organization</label>
@@ -84,9 +88,11 @@ export default function ContactForm() {
             value={fields.facility}
             onChange={(e) => set("facility", e.target.value)}
             required
+            aria-invalid={errors.facility ? true : undefined}
+            aria-describedby={errors.facility ? "contact-facility-error" : undefined}
           />
           {errors.facility ? (
-            <span className="field-error" role="alert">{errors.facility}</span>
+            <span className="field-error" role="alert" id="contact-facility-error">{errors.facility}</span>
           ) : null}
         </div>
         <div className={`field field--wide${errors.email ? " field--invalid" : ""}`}>
@@ -100,8 +106,12 @@ export default function ContactForm() {
             value={fields.email}
             onChange={(e) => set("email", e.target.value)}
             required
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={errors.email ? "contact-email-error" : undefined}
           />
-          {errors.email ? <span className="field-error" role="alert">{errors.email}</span> : null}
+          {errors.email ? (
+            <span className="field-error" role="alert" id="contact-email-error">{errors.email}</span>
+          ) : null}
         </div>
         <div className={`field field--wide${errors.message ? " field--invalid" : ""}`}>
           <label htmlFor="contact-message">Message</label>
@@ -112,9 +122,11 @@ export default function ContactForm() {
             value={fields.message}
             onChange={(e) => set("message", e.target.value)}
             required
+            aria-invalid={errors.message ? true : undefined}
+            aria-describedby={errors.message ? "contact-message-error" : undefined}
           />
           {errors.message ? (
-            <span className="field-error" role="alert">{errors.message}</span>
+            <span className="field-error" role="alert" id="contact-message-error">{errors.message}</span>
           ) : null}
         </div>
       </div>

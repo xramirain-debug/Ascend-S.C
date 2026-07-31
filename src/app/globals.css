@@ -28,8 +28,10 @@
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -139,8 +141,10 @@ img {
 }
 
 .site-header__logo img {
-  height: 60px;
+  height: auto;
+  max-height: 60px;
   width: auto;
+  max-width: 100%;
   display: block;
 }
 
@@ -609,7 +613,7 @@ fieldset.field {
   gap: 7px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #8a8a80;
+  color: #6c6c62;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 20px;
@@ -621,7 +625,7 @@ fieldset.field {
   height: 22px;
   border-radius: 50%;
   background: #e8e5dc;
-  color: #7a7a70;
+  color: #5f5f56;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -645,7 +649,7 @@ fieldset.field {
 }
 
 .step-dot--done .n {
-  background: var(--sage);
+  background: var(--sage-dark);
   color: #fff;
 }
 
@@ -683,8 +687,10 @@ fieldset.field {
 }
 
 .site-footer__logo {
-  height: 54px;
+  height: auto;
+  max-height: 54px;
   width: auto;
+  max-width: 100%;
   background: #fff;
   border-radius: 8px;
   padding: 6px 12px;

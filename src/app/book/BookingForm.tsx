@@ -87,8 +87,12 @@ export default function BookingForm() {
             value={fields.name}
             onChange={(e) => set("name", e.target.value)}
             required
+            aria-invalid={errors.name ? true : undefined}
+            aria-describedby={errors.name ? "book-name-error" : undefined}
           />
-          {errors.name ? <span className="field-error" role="alert">{errors.name}</span> : null}
+          {errors.name ? (
+            <span className="field-error" role="alert" id="book-name-error">{errors.name}</span>
+          ) : null}
         </div>
         <div className={`field${errors.facility ? " field--invalid" : ""}`}>
           <label htmlFor="book-facility">Facility / organization</label>
@@ -99,8 +103,12 @@ export default function BookingForm() {
             value={fields.facility}
             onChange={(e) => set("facility", e.target.value)}
             required
+            aria-invalid={errors.facility ? true : undefined}
+            aria-describedby={errors.facility ? "book-facility-error" : undefined}
           />
-          {errors.facility ? <span className="field-error" role="alert">{errors.facility}</span> : null}
+          {errors.facility ? (
+            <span className="field-error" role="alert" id="book-facility-error">{errors.facility}</span>
+          ) : null}
         </div>
         <div className={`field${errors.phone ? " field--invalid" : ""}`}>
           <label htmlFor="book-phone">Phone</label>
@@ -111,8 +119,12 @@ export default function BookingForm() {
             value={fields.phone}
             onChange={(e) => set("phone", e.target.value)}
             required
+            aria-invalid={errors.phone ? true : undefined}
+            aria-describedby={errors.phone ? "book-phone-error" : undefined}
           />
-          {errors.phone ? <span className="field-error" role="alert">{errors.phone}</span> : null}
+          {errors.phone ? (
+            <span className="field-error" role="alert" id="book-phone-error">{errors.phone}</span>
+          ) : null}
         </div>
         <div className={`field${errors.email ? " field--invalid" : ""}`}>
           <label htmlFor="book-email">Email</label>
@@ -123,8 +135,12 @@ export default function BookingForm() {
             value={fields.email}
             onChange={(e) => set("email", e.target.value)}
             required
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={errors.email ? "book-email-error" : undefined}
           />
-          {errors.email ? <span className="field-error" role="alert">{errors.email}</span> : null}
+          {errors.email ? (
+            <span className="field-error" role="alert" id="book-email-error">{errors.email}</span>
+          ) : null}
         </div>
         <div className={`field field--wide${errors.consultationType ? " field--invalid" : ""}`}>
           <label htmlFor="book-type">Consultation type</label>
@@ -133,6 +149,8 @@ export default function BookingForm() {
             value={fields.consultationType}
             onChange={(e) => set("consultationType", e.target.value)}
             required
+            aria-invalid={errors.consultationType ? true : undefined}
+            aria-describedby={errors.consultationType ? "book-type-error" : undefined}
           >
             <option value="">Select…</option>
             {consultationTypes.map((t) => (
@@ -142,7 +160,7 @@ export default function BookingForm() {
             ))}
           </select>
           {errors.consultationType ? (
-            <span className="field-error" role="alert">{errors.consultationType}</span>
+            <span className="field-error" role="alert" id="book-type-error">{errors.consultationType}</span>
           ) : null}
         </div>
         <div className={`field field--wide${errors.preferredTimes ? " field--invalid" : ""}`}>
@@ -157,9 +175,11 @@ export default function BookingForm() {
             value={fields.preferredTimes}
             onChange={(e) => set("preferredTimes", e.target.value)}
             required
+            aria-invalid={errors.preferredTimes ? true : undefined}
+            aria-describedby={errors.preferredTimes ? "book-times-error" : undefined}
           />
           {errors.preferredTimes ? (
-            <span className="field-error" role="alert">{errors.preferredTimes}</span>
+            <span className="field-error" role="alert" id="book-times-error">{errors.preferredTimes}</span>
           ) : null}
         </div>
         <div className="field field--wide">

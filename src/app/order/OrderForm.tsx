@@ -284,9 +284,11 @@ export default function OrderForm() {
               value={fields.facilityName}
               onChange={(e) => set("facilityName", e.target.value)}
               required
+              aria-invalid={errors.facilityName ? true : undefined}
+              aria-describedby={errors.facilityName ? "order-facility-error" : undefined}
             />
             {errors.facilityName ? (
-              <span className="field-error" role="alert">{errors.facilityName}</span>
+              <span className="field-error" role="alert" id="order-facility-error">{errors.facilityName}</span>
             ) : null}
           </div>
           <div className={`field${errors.contactName ? " field--invalid" : ""}`}>
@@ -298,9 +300,11 @@ export default function OrderForm() {
               value={fields.contactName}
               onChange={(e) => set("contactName", e.target.value)}
               required
+              aria-invalid={errors.contactName ? true : undefined}
+              aria-describedby={errors.contactName ? "order-contact-error" : undefined}
             />
             {errors.contactName ? (
-              <span className="field-error" role="alert">{errors.contactName}</span>
+              <span className="field-error" role="alert" id="order-contact-error">{errors.contactName}</span>
             ) : null}
           </div>
           <div className={`field${errors.email ? " field--invalid" : ""}`}>
@@ -312,9 +316,11 @@ export default function OrderForm() {
               value={fields.email}
               onChange={(e) => set("email", e.target.value)}
               required
+              aria-invalid={errors.email ? true : undefined}
+              aria-describedby={errors.email ? "order-email-error" : undefined}
             />
             {errors.email ? (
-              <span className="field-error" role="alert">{errors.email}</span>
+              <span className="field-error" role="alert" id="order-email-error">{errors.email}</span>
             ) : null}
           </div>
           <div className={`field${errors.phone ? " field--invalid" : ""}`}>
@@ -326,9 +332,11 @@ export default function OrderForm() {
               value={fields.phone}
               onChange={(e) => set("phone", e.target.value)}
               required
+              aria-invalid={errors.phone ? true : undefined}
+              aria-describedby={errors.phone ? "order-phone-error" : undefined}
             />
             {errors.phone ? (
-              <span className="field-error" role="alert">{errors.phone}</span>
+              <span className="field-error" role="alert" id="order-phone-error">{errors.phone}</span>
             ) : null}
           </div>
           <div className="field field--wide">
