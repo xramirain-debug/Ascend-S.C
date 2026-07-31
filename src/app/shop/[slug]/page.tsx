@@ -85,7 +85,10 @@ export default async function ProductPage({
               ) : null}
             </div>
             <div>
-              <AddToOrderButton id={item.id} />
+              <AddToOrderButton
+                id={item.id}
+                label={bundle ? "Order this bundle" : "Order this binder"}
+              />
             </div>
             <p style={{ fontSize: 13.5 }}>
               Ordering starts a conversation, not a checkout — we&apos;ll reach

@@ -8,7 +8,13 @@ import {
   onSelectionChange,
 } from "@/lib/order-store";
 
-export default function AddToOrderButton({ id }: { id: string }) {
+export default function AddToOrderButton({
+  id,
+  label = "Order this binder",
+}: {
+  id: string;
+  label?: string;
+}) {
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
@@ -34,7 +40,7 @@ export default function AddToOrderButton({ id }: { id: string }) {
       className="btn btn--primary"
       onClick={() => addToSelection(id)}
     >
-      Order this binder
+      {label}
     </button>
   );
 }
