@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
-import Photo from "@/components/Photo";
+import Photo, { type PhotoName } from "@/components/Photo";
 
 export const metadata: Metadata = {
   title: "Compliance, Clinical & Operations Consulting",
@@ -22,7 +22,7 @@ const services = [
       "Plan of correction help",
     ],
     result: "Reduced survey risk and a confident, well-prepared team.",
-    photo: "/photo-documentation.jpg",
+    photo: "documentation" as PhotoName,
     photoAlt: "Two clinicians reviewing survey documentation together",
   },
   {
@@ -37,7 +37,7 @@ const services = [
       "Documentation",
     ],
     result: "Stronger oversight, confident staff, improved outcomes.",
-    photo: "/photo-clinical.jpg",
+    photo: "clinical" as PhotoName,
     photoAlt: "A nurse going over care details with a resident",
   },
   {
@@ -51,7 +51,7 @@ const services = [
       "Reimbursement",
     ],
     result: "Stronger systems, optimized revenue, empowered teams.",
-    photo: "/photo-care-team.jpg",
+    photo: "careTeam" as PhotoName,
     photoAlt: "A care team and a resident talking together",
   },
 ];
@@ -76,7 +76,7 @@ export default function ServicesPage() {
             aria-labelledby={`${s.id}-title`}
           >
             {i % 2 === 1 && (
-              <Photo src={s.photo} alt={s.photoAlt} height={300} />
+              <Photo name={s.photo} alt={s.photoAlt} />
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <h2 id={`${s.id}-title`}>{s.title}</h2>
@@ -102,7 +102,7 @@ export default function ServicesPage() {
               </div>
             </div>
             {i % 2 === 0 && (
-              <Photo src={s.photo} alt={s.photoAlt} height={300} />
+              <Photo name={s.photo} alt={s.photoAlt} />
             )}
           </section>
         ))}

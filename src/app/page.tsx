@@ -66,9 +66,8 @@ export default function HomePage() {
           </div>
         </div>
         <Photo
-          src="/photo-care-team.jpg"
+          name="careTeam"
           alt="A nurse and a physician talking with a resident"
-          height={370}
           priority
         />
       </div>
@@ -76,9 +75,8 @@ export default function HomePage() {
       {/* positioning */}
       <div className="section split">
         <Photo
-          src="/photo-documentation.jpg"
+          name="documentation"
           alt="Two clinicians reviewing documentation together"
-          height={340}
         />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <h2>Consulting for Real-World Senior Care Challenges</h2>

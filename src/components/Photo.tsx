@@ -1,41 +1,44 @@
 import Image from "next/image";
 
 /**
- * A framed photograph sized to the site's card radius. Wraps next/image so
- * every photo gets the same treatment and automatic optimization.
+ * Site photography. Each picture's intrinsic dimensions live here so its
+ * frame can take the photo's own proportions — the whole image is shown,
+ * never cropped to fit a fixed height.
  */
+export const photos = {
+  careTeam: { src: "/photo-care-team.jpg", width: 1280, height: 698 },
+  documentation: { src: "/photo-documentation.jpg", width: 1280, height: 854 },
+  clinical: { src: "/photo-clinical.jpg", width: 1024, height: 683 },
+} as const;
+
+export type PhotoName = keyof typeof photos;
+
 export default function Photo({
-  src,
+  name,
   alt,
-  height = 340,
   priority = false,
   sizes = "(max-width: 980px) 100vw, 50vw",
 }: {
-  src: string;
+  name: PhotoName;
   alt: string;
-  height?: number;
   priority?: boolean;
   sizes?: string;
 }) {
+  const photo = photos[name];
   return (
-    <div
+    <Image
+      src={photo.src}
+      alt={alt}
+      width={photo.width}
+      height={photo.height}
+      sizes={sizes}
+      priority={priority}
       style={{
-        position: "relative",
         width: "100%",
-        height,
+        height: "auto",
         borderRadius: "var(--radius)",
-        overflow: "hidden",
-        background: "var(--sage-light)",
+        display: "block",
       }}
-    >
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={sizes}
-        priority={priority}
-        style={{ objectFit: "cover" }}
-      />
-    </div>
+    />
   );
 }
