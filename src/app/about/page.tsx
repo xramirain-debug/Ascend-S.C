@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import PageHero from "@/components/PageHero";
-import PhotoSlot from "@/components/PhotoSlot";
 
 export const metadata: Metadata = {
   title: "About",
@@ -24,10 +24,20 @@ export default function AboutPage() {
         lede="Providers don't need more theory — they need solutions that work. That belief is where Ascend started."
       />
       <div className="section split" style={{ alignItems: "start" }}>
-        {/* TODO(owner): replace this slot with the real headshot —
-            drop the photo in /public and swap PhotoSlot for <Image>. */}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <PhotoSlot label="founder headshot — TODO replace" minHeight={420} />
+          <Image
+            src="/founder.webp"
+            alt="Founder of Ascend Senior Consulting"
+            width={900}
+            height={900}
+            sizes="(max-width: 980px) 100vw, 40vw"
+            style={{
+              width: "100%",
+              height: "auto",
+              borderRadius: "var(--radius)",
+            }}
+            priority
+          />
           <div className="card" style={{ background: "var(--paper)" }}>
             <p className="eyebrow" style={{ marginBottom: 10 }}>
               Credentials

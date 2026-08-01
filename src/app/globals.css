@@ -140,10 +140,11 @@ img {
   position: relative;
 }
 
+/* Constrain width only and let height follow. Setting both a max-width and a
+   max-height lets the two clamps bind at once, which stretches the logo. */
 .site-header__logo img {
+  width: 200px;
   height: auto;
-  max-height: 60px;
-  width: auto;
   max-width: 100%;
   display: block;
 }
@@ -707,14 +708,15 @@ fieldset.field {
   color: #fff;
 }
 
+/* The logo ships on an opaque near-white plate, so it sits on a white card
+   against the navy footer. Width-only constraint, as in the header. */
 .site-footer__logo {
+  width: 190px;
   height: auto;
-  max-height: 54px;
-  width: auto;
   max-width: 100%;
   background: #fff;
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 8px 12px;
 }
 
 .site-footer__bottom {
@@ -749,6 +751,10 @@ fieldset.field {
 
   .site-header {
     padding: 12px 20px;
+  }
+
+  .site-header__logo img {
+    width: 158px;
   }
 
   .grid-3 {

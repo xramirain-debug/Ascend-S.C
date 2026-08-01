@@ -10,8 +10,9 @@ export default function Footer() {
           <Image
             src="/ascend-logo.png"
             alt="Ascend Senior Consulting"
-            width={230}
-            height={54}
+            width={1113}
+            height={415}
+            sizes="200px"
             className="site-footer__logo"
           />
           <p style={{ color: "var(--navy-text-soft)", fontSize: 14.5 }}>

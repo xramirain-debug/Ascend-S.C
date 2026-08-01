@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import PhotoSlot from "@/components/PhotoSlot";
+import Photo from "@/components/Photo";
 import {
   featuredProductIds,
   formatPrice,
@@ -65,12 +65,21 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        <PhotoSlot label="care team working session" minHeight={360} />
+        <Photo
+          src="/photo-care-team.jpg"
+          alt="A nurse and a physician talking with a resident"
+          height={370}
+          priority
+        />
       </div>
 
       {/* positioning */}
       <div className="section split">
-        <PhotoSlot label="reviewing documentation together" minHeight={330} />
+        <Photo
+          src="/photo-documentation.jpg"
+          alt="Two clinicians reviewing documentation together"
+          height={340}
+        />
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <h2>Consulting for Real-World Senior Care Challenges</h2>
           <p>

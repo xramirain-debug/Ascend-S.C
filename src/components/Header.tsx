@@ -21,8 +21,9 @@ export default function Header() {
         <Image
           src="/ascend-logo.png"
           alt="Ascend Senior Consulting"
-          width={256}
-          height={60}
+          width={1113}
+          height={415}
+          sizes="220px"
           priority
         />
       </Link>

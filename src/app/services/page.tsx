@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
-import PhotoSlot from "@/components/PhotoSlot";
+import Photo from "@/components/Photo";
 
 export const metadata: Metadata = {
   title: "Compliance, Clinical & Operations Consulting",
@@ -22,7 +22,8 @@ const services = [
       "Plan of correction help",
     ],
     result: "Reduced survey risk and a confident, well-prepared team.",
-    photo: "compliance review at the conference table",
+    photo: "/photo-documentation.jpg",
+    photoAlt: "Two clinicians reviewing survey documentation together",
   },
   {
     id: "clinical-practices",
@@ -36,7 +37,8 @@ const services = [
       "Documentation",
     ],
     result: "Stronger oversight, confident staff, improved outcomes.",
-    photo: "nurse mentoring session",
+    photo: "/photo-clinical.jpg",
+    photoAlt: "A nurse going over care details with a resident",
   },
   {
     id: "operational-strategies",
@@ -49,7 +51,8 @@ const services = [
       "Reimbursement",
     ],
     result: "Stronger systems, optimized revenue, empowered teams.",
-    photo: "operations planning session",
+    photo: "/photo-care-team.jpg",
+    photoAlt: "A care team and a resident talking together",
   },
 ];
 
@@ -72,7 +75,9 @@ export default function ServicesPage() {
             className="split"
             aria-labelledby={`${s.id}-title`}
           >
-            {i % 2 === 1 && <PhotoSlot label={s.photo} minHeight={300} />}
+            {i % 2 === 1 && (
+              <Photo src={s.photo} alt={s.photoAlt} height={300} />
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <h2 id={`${s.id}-title`}>{s.title}</h2>
               <p>{s.intro}</p>
@@ -96,7 +101,9 @@ export default function ServicesPage() {
                 </Link>
               </div>
             </div>
-            {i % 2 === 0 && <PhotoSlot label={s.photo} minHeight={300} />}
+            {i % 2 === 0 && (
+              <Photo src={s.photo} alt={s.photoAlt} height={300} />
+            )}
           </section>
         ))}
 

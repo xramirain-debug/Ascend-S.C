@@ -201,14 +201,37 @@ Search the repo for `TODO` — each spot is marked:
   the real headshot.
 - **Product detail pages** (`src/data/catalog.ts`): per-product
   "What's customized to your facility / What we maintain" lists.
-- **Logo**: `public/ascend-logo.png` is a generated placeholder wordmark.
-  Replace the file with the real logo (keep the filename, ideally roughly
-  the same wide aspect ratio) and header/footer pick it up automatically.
-  `public/og.png` (social sharing image) and `src/app/icon.png` (favicon)
-  are placeholders in the same style — replace in place.
-- **Photography**: pages use styled `PhotoSlot` placeholders
-  (`src/components/PhotoSlot.tsx`). Drop real photos into `public/` and
-  replace each slot with a Next `<Image>`.
+Brand assets and photography are in place — see "Images" below if you need
+to swap any of them.
+
+## Images
+
+Everything lives in `public/` and renders through `next/image`, so sizes and
+formats are optimized automatically.
+
+| File | Where it appears |
+| --- | --- |
+| `ascend-logo.png` | Header and footer |
+| `photo-care-team.jpg` | Home hero · Services (Operational Strategies) |
+| `photo-documentation.jpg` | Home (positioning) · Services (Regulatory Compliance) |
+| `photo-clinical.jpg` | Services (Clinical Practices) |
+| `founder.webp` | About page portrait |
+| `og.png` | Social sharing card |
+| `src/app/icon.png` | Favicon |
+
+To swap a photo, replace the file in `public/` keeping the same name — no
+code change needed. Photos render through `src/components/Photo.tsx`, which
+handles the framing and cropping; update the `alt` text at the call site if
+the new photo shows something different.
+
+`og.png` and `src/app/icon.png` are generated from the logo. To regenerate
+them after a logo change, re-crop from the new file — the favicon is the
+emblem alone (measured from the logo's ink bounds) and the OG card sits the
+full logo above a navy band carrying the positioning line and phone number.
+
+Note the logo ships on an opaque near-white plate rather than a transparent
+background, which is why the footer places it on a white card — that's
+deliberate, not a styling accident.
 
 ## Deploy notes
 
