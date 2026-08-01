@@ -15,17 +15,42 @@ import {
 } from "./intake-schema";
 import { getSelection } from "@/lib/order-store";
 import { submitForm } from "@/lib/submit";
+import { site } from "@/data/site";
 
-const STORAGE_KEY = "ascend-intake-v1";
+/** Order context from a paid checkout, via the signed intake token. */
+export interface OrderContext {
+  sessionId: string;
+  /** Ids exactly as purchased (bundles stay bundles). */
+  items: string[];
+  /** Purchased ids with bundles expanded to their component binders. */
+  expandedItems: string[];
+  /** Display names of what was purchased. */
+  itemNames: string[];
+  email: string;
+  facility: string;
+}
+
+/* Progress is keyed per order so two facilities sharing a device — or one
+   facility doing a pre-purchase intake and then a purchased one — never
+   collide. */
+function storageKey(order: OrderContext | null): string {
+  return order
+    ? `ascend-intake-v1:${order.sessionId}`
+    : "ascend-intake-v1";
+}
+
+/* With a verified purchase, what was bought is a fact, not a question. */
+const LOCKED_WITH_ORDER = new Set(["bindersOrdered"]);
+const EMPTY_LOCKED = new Set<string>();
 
 interface Saved {
   answers: Answers;
   stepIndex: number;
 }
 
-function loadSaved(): Saved | null {
+function loadSaved(key: string): Saved | null {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === "object" && parsed.answers) return parsed;
@@ -35,7 +60,12 @@ function loadSaved(): Saved | null {
   }
 }
 
-export default function IntakeWizard() {
+export default function IntakeWizard({
+  order = null,
+}: {
+  order?: OrderContext | null;
+}) {
+  const STORAGE_KEY = storageKey(order);
   const [answers, setAnswers] = useState<Answers>({});
   const [stepIndex, setStepIndex] = useState(0); // index into pages (steps + review)
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,20 +77,45 @@ export default function IntakeWizard() {
   const [resumed, setResumed] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
 
-  /* load saved progress (and prefill binder selection from the order flow) */
+  /* Load saved progress; otherwise seed from the paid order (preferred) or
+     from an unpaid cart selection. A purchased order always re-asserts what
+     was bought, so a stale saved list can't mis-scope the supplements. */
   useEffect(() => {
-    const saved = loadSaved();
+    const saved = loadSaved(STORAGE_KEY);
     if (saved) {
-      setAnswers(saved.answers);
-      setStepIndex(saved.stepIndex);
+      setAnswers(
+        order
+          ? { ...saved.answers, bindersOrdered: order.expandedItems }
+          : saved.answers,
+      );
+      setStepIndex(
+        Number.isInteger(saved.stepIndex) && saved.stepIndex >= 0
+          ? saved.stepIndex
+          : 0,
+      );
       setResumed(true);
+    } else if (order) {
+      const seeded: Answers = {
+        bindersOrdered: order.expandedItems,
+        legalName: order.facility || "",
+        contactEmail: order.email || "",
+      };
+      /* Buying the CL layer means they bill DHS — pre-set it, still editable. */
+      if (order.expandedItems.includes("customized-living-layer")) {
+        seeded.dhsBilling = "Yes";
+      }
+      if (order.expandedItems.includes("dementia-care-addon")) {
+        seeded.dementiaLicense = "Yes";
+      }
+      setAnswers(seeded);
     } else {
-      const orderIds = getSelection();
-      if (orderIds.length > 0) {
-        setAnswers({ bindersOrdered: orderIds });
+      const cartIds = getSelection();
+      if (cartIds.length > 0) {
+        setAnswers({ bindersOrdered: cartIds });
       }
     }
     setStatus("editing");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* persist progress (also while showing a submit error — the user can
@@ -75,7 +130,7 @@ export default function IntakeWizard() {
     } catch {
       /* storage full/unavailable — resume just won't work */
     }
-  }, [answers, stepIndex, status]);
+  }, [answers, stepIndex, status, STORAGE_KEY]);
 
   const stepsNow = useMemo(() => visibleSteps(answers), [answers]);
   const totalPages = stepsNow.length + 1; // + review
@@ -173,7 +228,11 @@ export default function IntakeWizard() {
     }
     setStatus("sending");
     setServerError("");
-    const result = await submitForm("intake", buildSubmission(answers), honeypot);
+    const payload: Record<string, unknown> = buildSubmission(answers);
+    if (order) {
+      payload.__order = { sessionId: order.sessionId, items: order.items };
+    }
+    const result = await submitForm("intake", payload, honeypot);
     if (result.ok) {
       window.localStorage.removeItem(STORAGE_KEY);
       setStatus("done");
@@ -238,6 +297,13 @@ export default function IntakeWizard() {
 
   return (
     <div ref={topRef} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {order && order.itemNames.length > 0 ? (
+        <div className="notice notice--ok no-print" role="note">
+          <strong>Your order:</strong> {order.itemNames.join(" · ")}. The
+          sections below are scoped to exactly what you purchased.
+        </div>
+      ) : null}
+
       {resumed ? (
         <div className="notice notice--ok no-print" role="status">
           Welcome back — your earlier answers were saved on this device.{" "}
@@ -315,6 +381,7 @@ export default function IntakeWizard() {
           answers={answers}
           errors={errors}
           onChange={setAnswer}
+          lockedFields={order ? LOCKED_WITH_ORDER : EMPTY_LOCKED}
         />
       ) : (
         <ReviewScreen
@@ -388,11 +455,13 @@ function StepForm({
   answers,
   errors,
   onChange,
+  lockedFields,
 }: {
   step: StepDef;
   answers: Answers;
   errors: Record<string, string>;
   onChange: (id: string, value: string | string[]) => void;
+  lockedFields: Set<string>;
 }) {
   return (
     <form
@@ -425,19 +494,55 @@ function StepForm({
           <div className="form-grid">
             {group.fields
               .filter((f) => !f.showIf || f.showIf(answers))
-              .map((f) => (
-                <Field
-                  key={f.id}
-                  field={f}
-                  answers={answers}
-                  error={errors[f.id]}
-                  onChange={onChange}
-                />
-              ))}
+              .map((f) =>
+                lockedFields.has(f.id) ? (
+                  <LockedField key={f.id} field={f} answers={answers} />
+                ) : (
+                  <Field
+                    key={f.id}
+                    field={f}
+                    answers={answers}
+                    error={errors[f.id]}
+                    onChange={onChange}
+                  />
+                ),
+              )}
           </div>
         </div>
       ))}
     </form>
+  );
+}
+
+/** A value carried in from a verified purchase — shown, not asked. */
+function LockedField({
+  field,
+  answers,
+}: {
+  field: FieldDef;
+  answers: Answers;
+}) {
+  const value = answers[field.id];
+  const names = Array.isArray(value)
+    ? value.map((v) => field.options?.find((o) => o.value === v)?.label ?? v)
+    : [];
+  return (
+    <div className="field field--wide">
+      <span className="field__legend">{field.label}</span>
+      <span className="hint">
+        Taken from your order — call {site.phone} if something looks wrong.
+      </span>
+      <ul
+        className="bullet-list"
+        style={{ fontSize: 14.5, marginTop: 6 }}
+      >
+        {names.length > 0 ? (
+          names.map((n) => <li key={n}>{n}</li>)
+        ) : (
+          <li>Your purchased binders</li>
+        )}
+      </ul>
+    </div>
   );
 }
 

@@ -5,10 +5,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { nav } from "@/data/site";
+import { useCart } from "@/components/CartProvider";
 
 export default function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { count } = useCart();
 
   const isCurrent = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -48,6 +50,20 @@ export default function Header() {
             {item.label}
           </Link>
         ))}
+        <Link
+          href="/cart"
+          className="cart-link"
+          aria-current={isCurrent("/cart") ? "page" : undefined}
+          aria-label={`Cart, ${count} item${count === 1 ? "" : "s"}`}
+          onClick={() => setOpen(false)}
+        >
+          Cart
+          {count > 0 ? (
+            <span className="cart-count" aria-hidden="true">
+              {count}
+            </span>
+          ) : null}
+        </Link>
         <Link
           href="/book"
           className="btn btn--primary"

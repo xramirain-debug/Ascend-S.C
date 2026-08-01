@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Source_Sans_3 } from "next/font/google";
 import { site } from "@/data/site";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { CartProvider } from "@/components/CartProvider";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -45,11 +46,13 @@ export default function RootLayout({
         <a href="#main" className="skip-link">
           Skip to content
         </a>
-        <div className="shell">
-          <Header />
-          <main id="main">{children}</main>
-          <Footer />
-        </div>
+        <CartProvider>
+          <div className="shell">
+            <Header />
+            <main id="main">{children}</main>
+            <Footer />
+          </div>
+        </CartProvider>
       </body>
     </html>
   );

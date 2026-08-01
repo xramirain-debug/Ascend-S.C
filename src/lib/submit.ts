@@ -5,7 +5,12 @@
  * (contact, booking request, order request, facility intake) posts here.
  */
 
-export type SubmissionKind = "contact" | "booking" | "order" | "intake";
+export type SubmissionKind =
+  | "contact"
+  | "booking"
+  | "order"
+  | "intake"
+  | "intake-link";
 
 export interface SubmissionResult {
   ok: boolean;

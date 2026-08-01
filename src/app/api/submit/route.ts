@@ -1,16 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ownerEmail, sendEmail } from "@/lib/email";
+import { getStore } from "@/lib/store";
+import { site } from "@/data/site";
 
 /**
  * Single submission handler for every form on the site:
- * contact · booking request · order request · facility intake.
+ * contact · booking request · order request · facility intake ·
+ * intake-link resend.
  *
- * Email is sent through Resend's REST API when RESEND_API_KEY is set
- * (no SDK dependency — one HTTPS call). With no key configured, the
- * submission is logged to the server console so nothing is lost in
- * development or before the key is provisioned.
+ * Email is the system of record; a storage adapter persists orders and
+ * intakes when one is configured (see src/lib/store.ts).
  */
 
-const KINDS = ["contact", "booking", "order", "intake"] as const;
+const KINDS = [
+  "contact",
+  "booking",
+  "order",
+  "intake",
+  "intake-link",
+] as const;
 type Kind = (typeof KINDS)[number];
 
 const SUBJECTS: Record<Kind, string> = {
@@ -18,15 +26,8 @@ const SUBJECTS: Record<Kind, string> = {
   booking: "New consultation request",
   order: "New binder order request",
   intake: "New facility intake submission",
+  "intake-link": "Intake link resend requested",
 };
-
-function ownerEmail(): string {
-  return (
-    process.env.OWNER_EMAIL ||
-    process.env.NEXT_PUBLIC_OWNER_EMAIL ||
-    "owner@ascendseniorconsulting.com"
-  );
-}
 
 /** Render nested submission data as readable plain text for the email. */
 function renderValue(value: unknown, indent = ""): string {
@@ -66,27 +67,18 @@ function renderBody(kind: Kind, data: Record<string, unknown>): string {
   ].join("\n");
 }
 
-async function sendEmail(subject: string, text: string): Promise<boolean> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.log(`[submission — email not configured]\nSubject: ${subject}\n${text}`);
-    return true;
+/** Best-effort dig for a value nested anywhere in the intake payload. */
+function findValue(data: Record<string, unknown>, needle: string): string {
+  for (const v of Object.values(data)) {
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      for (const [k2, v2] of Object.entries(v as Record<string, unknown>)) {
+        if (k2.toLowerCase().includes(needle) && typeof v2 === "string" && v2 !== "—") {
+          return v2;
+        }
+      }
+    }
   }
-  const from =
-    process.env.EMAIL_FROM || "Ascend Website <onboarding@resend.dev>";
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from, to: [ownerEmail()], subject, text }),
-  });
-  if (!res.ok) {
-    console.error("Email send failed:", res.status, await res.text());
-    return false;
-  }
-  return true;
+  return "";
 }
 
 export async function POST(req: NextRequest) {
@@ -122,10 +114,29 @@ export async function POST(req: NextRequest) {
   }
 
   const k = kind as Kind;
-  const sent = await sendEmail(
-    `${SUBJECTS[k]} — Ascend website`,
-    renderBody(k, data as Record<string, unknown>),
-  );
+  const record = data as Record<string, unknown>;
+
+  /* An intake that came from a paid order carries its order context so the
+     owner can match submission to purchase. */
+  const orderMeta = record.__order as
+    | { sessionId?: string; items?: string[] }
+    | undefined;
+  const body =
+    k === "intake" && orderMeta
+      ? [
+          "ORDER",
+          `Stripe session: ${orderMeta.sessionId ?? "—"}`,
+          `Items: ${(orderMeta.items ?? []).join(", ") || "—"}`,
+          "",
+          renderBody(k, omit(record, "__order")),
+        ].join("\n")
+      : renderBody(k, omit(record, "__order"));
+
+  const sent = await sendEmail({
+    to: ownerEmail(),
+    subject: `${SUBJECTS[k]} — Ascend website`,
+    text: body,
+  });
 
   if (!sent) {
     return NextResponse.json(
@@ -133,5 +144,46 @@ export async function POST(req: NextRequest) {
       { status: 502 },
     );
   }
+
+  if (k === "intake") {
+    const clean = omit(record, "__order");
+    const facilityName = findValue(clean, "legal facility name") || "your facility";
+    await getStore().saveIntake({
+      sessionId: orderMeta?.sessionId,
+      items: orderMeta?.items,
+      facilityName,
+      submission: clean,
+      createdAt: new Date().toISOString(),
+    });
+
+    /* confirmation to the facility — best effort, never blocks the response */
+    const contactEmail = findValue(clean, "contact email");
+    if (contactEmail) {
+      await sendEmail({
+        to: contactEmail,
+        subject: "We received your facility intake — Ascend Senior Consulting",
+        text: [
+          `Thank you — we've received the facility intake for ${facilityName}.`,
+          "",
+          "We'll review your answers and reach out to schedule your working",
+          "session. If anything changes in the meantime, just call or reply.",
+          "",
+          `Questions? Call ${site.phone}.`,
+          "— Ascend Senior Consulting",
+        ].join("\n"),
+      });
+    }
+  }
+
   return NextResponse.json({ ok: true });
+}
+
+function omit(
+  obj: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> {
+  if (!(key in obj)) return obj;
+  const next = { ...obj };
+  delete next[key];
+  return next;
 }

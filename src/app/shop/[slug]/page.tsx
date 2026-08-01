@@ -87,12 +87,13 @@ export default async function ProductPage({
             <div>
               <AddToOrderButton
                 id={item.id}
-                label={bundle ? "Order this bundle" : "Order this binder"}
+                label={bundle ? "Add bundle to cart" : "Add to cart"}
               />
             </div>
             <p style={{ fontSize: 13.5 }}>
-              Ordering starts a conversation, not a checkout — we&apos;ll reach
-              out within one business day to begin your facility intake.
+              Every set is populated to your facility, so your facility intake
+              comes next — pay by card at checkout, or send an order request if
+              your building pays by check.
             </p>
           </div>
 

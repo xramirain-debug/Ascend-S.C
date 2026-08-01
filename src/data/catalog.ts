@@ -43,9 +43,16 @@ export interface Bundle {
   alaCartePrice: number;
   blurb: string;
   description: string[];
-  /** Product ids included, or a display list for the card. */
+  /** Display list for the card. */
   contents: string[];
   contentsNote?: string;
+  /**
+   * Product ids this bundle covers — used to warn when a cart holds both a
+   * bundle and one of its component binders, and to scope the intake wizard's
+   * supplements to a purchase. Where the bundle includes "an EP binder"
+   * without fixing the size, both EP ids are listed.
+   */
+  componentIds: string[];
 }
 
 export const sectionMeta: Record<
@@ -462,6 +469,11 @@ export const bundles: Bundle[] = [
       "Forms Manual",
       "Survey Master Binder",
     ],
+    componentIds: [
+      "policy-procedures-manual",
+      "forms-manual",
+      "survey-master-binder",
+    ],
   },
   {
     id: "license-essentials",
@@ -480,6 +492,17 @@ export const bundles: Bundle[] = [
       "Nursing Survey Binder",
       "Training & Competency Binder",
     ],
+    componentIds: [
+      "policy-procedures-manual",
+      "forms-manual",
+      "survey-master-binder",
+      "ep-binder-small",
+      "ep-binder-large",
+      "qapi-binder",
+      "hipaa-binder",
+      "nursing-survey-binder",
+      "training-competency-binder",
+    ],
   },
   {
     id: "complete-compliance-library",
@@ -493,6 +516,23 @@ export const bundles: Bundle[] = [
     contents: ["All fifteen core binders"],
     contentsNote:
       "Add-On Modules (Dementia Care, CL Layer) can be added for facilities holding those licenses or enrollments.",
+    componentIds: [
+      "policy-procedures-manual",
+      "forms-manual",
+      "survey-master-binder",
+      "ep-binder-small",
+      "ep-binder-large",
+      "qapi-binder",
+      "hipaa-binder",
+      "facility-operations-binder",
+      "contracts-vendor-binder",
+      "kitchen-survey-binder",
+      "fsep",
+      "nursing-survey-binder",
+      "resident-binder-system",
+      "personnel-binder-system",
+      "training-competency-binder",
+    ],
   },
 ];
 
@@ -519,6 +559,34 @@ export function productsInSection(section: ProductSection): Product[] {
 
 export function formatPrice(n: number): string {
   return "$" + n.toLocaleString("en-US");
+}
+
+/**
+ * Expand a list of ordered item ids so bundles contribute their component
+ * binders — used to scope the intake wizard's supplements to a purchase.
+ * The original ids (including bundle ids) are preserved alongside.
+ */
+export function expandItems(ids: string[]): string[] {
+  const out = new Set<string>();
+  for (const id of ids) {
+    out.add(id);
+    const bundle = getBundle(id);
+    if (bundle) bundle.componentIds.forEach((c) => out.add(c));
+  }
+  return [...out];
+}
+
+/**
+ * Cart sanity check: bundles already include their component binders. Returns
+ * the ids of individual products in `ids` that a bundle in `ids` also covers.
+ */
+export function findBundleDuplicates(ids: string[]): string[] {
+  const covered = new Set<string>();
+  for (const id of ids) {
+    const bundle = getBundle(id);
+    if (bundle) bundle.componentIds.forEach((c) => covered.add(c));
+  }
+  return ids.filter((id) => covered.has(id) && getProduct(id));
 }
 
 /** Featured on the home page binder-library teaser. */

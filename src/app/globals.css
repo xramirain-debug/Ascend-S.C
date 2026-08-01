@@ -170,6 +170,27 @@ img {
   border-bottom-color: var(--sage);
 }
 
+.site-nav .cart-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 21px;
+  height: 21px;
+  padding: 0 5px;
+  border-radius: 11px;
+  background: var(--navy);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .site-nav a.btn--primary {
   color: #fff;
   border-bottom: none;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageHero from "@/components/PageHero";
+import AddToOrderButton from "@/components/AddToOrderButton";
 import {
   bundles,
   formatPrice,
@@ -66,6 +67,7 @@ export default function ShopPage() {
                         View details →
                       </Link>
                     </div>
+                    <AddToOrderButton id={p.id} />
                   </div>
                 ))}
               </div>
@@ -108,6 +110,7 @@ export default function ShopPage() {
                     View details →
                   </Link>
                 </div>
+                <AddToOrderButton id={b.id} label="Add bundle to cart" />
               </div>
             ))}
           </div>

@@ -1,29 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  addToSelection,
-  getSelection,
-  onSelectionChange,
-} from "@/lib/order-store";
+import { useCart } from "@/components/CartProvider";
 
 export default function AddToOrderButton({
   id,
-  label = "Order this binder",
+  label = "Add to cart",
 }: {
   id: string;
   label?: string;
 }) {
-  const [added, setAdded] = useState(false);
+  const { has, add } = useCart();
+  const added = has(id);
   const justClicked = useRef(false);
   const linkRef = useRef<HTMLAnchorElement>(null);
-
-  useEffect(() => {
-    const sync = () => setAdded(getSelection().includes(id));
-    sync();
-    return onSelectionChange(sync);
-  }, [id]);
 
   /* keep keyboard users oriented: when the button they activated is
      replaced, move focus to the next action */
@@ -38,9 +29,9 @@ export default function AddToOrderButton({
     <div aria-live="polite">
       {added ? (
         <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-          <span className="badge">Added to your order</span>
-          <Link href="/order" className="btn btn--primary" ref={linkRef}>
-            Start your order
+          <span className="badge">In your cart</span>
+          <Link href="/cart" className="btn btn--primary" ref={linkRef}>
+            View cart
           </Link>
         </div>
       ) : (
@@ -49,7 +40,7 @@ export default function AddToOrderButton({
           className="btn btn--primary"
           onClick={() => {
             justClicked.current = true;
-            addToSelection(id);
+            add(id);
           }}
         >
           {label}

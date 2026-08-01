@@ -10,6 +10,8 @@
  * Resident-related questions are counts or aggregate descriptions only.
  */
 
+import { expandItems } from "@/data/catalog";
+
 export type Answers = Record<string, string | string[] | undefined>;
 
 export type FieldType =
@@ -67,32 +69,20 @@ const YES_NO: Option[] = [
 
 const opt = (v: string): Option => ({ value: v, label: v });
 
-/* Which "binders in your order" selections make each supplement relevant.
-   Bundles are expanded to the binders they contain. */
-const EP_TRIGGERS = [
-  "ep-binder-small",
-  "ep-binder-large",
-  "license-essentials",
-  "complete-compliance-library",
-  "all",
-];
-const SURVEY_MASTER_TRIGGERS = [
-  "survey-master-binder",
-  "survey-ready-core",
-  "license-essentials",
-  "complete-compliance-library",
-  "all",
-];
-const KITCHEN_TRIGGERS = [
-  "kitchen-survey-binder",
-  "complete-compliance-library",
-  "all",
-];
+/* Which binders make each supplement relevant. Selections are expanded
+   through the catalog first, so a bundle counts as every binder it contains
+   — this works identically for a checkbox selection and for the item list
+   carried by a paid order's intake token. */
+const EP_TRIGGERS = ["ep-binder-small", "ep-binder-large", "all"];
+const SURVEY_MASTER_TRIGGERS = ["survey-master-binder", "all"];
+const KITCHEN_TRIGGERS = ["kitchen-survey-binder", "all"];
+const CL_TRIGGERS = ["customized-living-layer"];
+const DEMENTIA_TRIGGERS = ["dementia-care-addon"];
 
 function ordered(a: Answers, triggers: string[]): boolean {
   const sel = a.bindersOrdered;
   if (!Array.isArray(sel)) return false;
-  return sel.some((id) => triggers.includes(id));
+  return expandItems(sel).some((id) => triggers.includes(id));
 }
 
 export const BINDER_ORDER_OPTIONS: Option[] = [
@@ -133,6 +123,13 @@ export const steps: StepDef[] = [
           { id: "hfid", label: "HFID", type: "text", required: true, hint: "Your MDH Health Facility ID." },
           { id: "streetAddress", label: "Street address", type: "text", required: true, placeholder: "Street, city, state, ZIP" },
           { id: "facilityPhone", label: "Facility phone", type: "tel", required: true },
+          {
+            id: "contactEmail",
+            label: "Contact email",
+            type: "email",
+            required: true,
+            hint: "Where we'll send your working-session details.",
+          },
           { id: "licenseNumber", label: "License number", type: "text", required: true },
           {
             id: "licenseCategory",
@@ -361,7 +358,7 @@ export const steps: StepDef[] = [
     title: "Customized Living Supplement",
     shortTitle: "CL Layer",
     desc: "Because you bill DHS for Customized Living, your set includes the CL documentation layer.",
-    visible: (a) => a.dhsBilling === "Yes",
+    visible: (a) => a.dhsBilling === "Yes" || ordered(a, CL_TRIGGERS),
     groups: [
       {
         fields: [
@@ -424,7 +421,7 @@ export const steps: StepDef[] = [
     title: "Dementia Care Supplement",
     shortTitle: "Dementia Care",
     desc: "Because you hold a dementia care license, a couple of unit details are needed.",
-    visible: (a) => a.dementiaLicense === "Yes",
+    visible: (a) => a.dementiaLicense === "Yes" || ordered(a, DEMENTIA_TRIGGERS),
     groups: [
       {
         fields: [
@@ -471,6 +468,11 @@ export function validateStep(step: StepDef, a: Answers): Record<string, string> 
     if (!empty && f.type === "number" && typeof v === "string") {
       if (!/^\d+$/.test(v.trim())) {
         errors[f.id] = "Please enter a whole number (0 or more).";
+      }
+    }
+    if (!empty && f.type === "email" && typeof v === "string") {
+      if (!/^\S+@\S+\.\S+$/.test(v.trim())) {
+        errors[f.id] = "Please enter a valid email address.";
       }
     }
   }
